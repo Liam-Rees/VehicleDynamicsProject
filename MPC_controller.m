@@ -1,6 +1,6 @@
-A = 
-B = 
-C = 
+A = -Cq2/(par.Izz * Vx);
+B = 1/par.Izz;
+C = 1;
 sysc = ss(A,B,C,[]);
 
 Ts = 0.1;
@@ -12,28 +12,28 @@ C_MPC = sysd.C;
 
 % Normalization factors
     wx1 = 1;
-    wx2 = 1;
-    wx3 = 1/250;
+    % wx2 = 1;
+    % wx3 = 1/250;
     wu1 = 1;
     
     % Penalization factors
     qx1 = 100;
-    qx2 = 1e0;
-    qx3 = 1e0;
+    % qx2 = 1e0;
+    % qx3 = 1e0;
     qu1 = 5e-4;
     
     % Q,R,L matrices
-    Q_MPC = [wx1*qx1, 0, 0;
-         0, wx2*qx2, 0;
-         0, 0, wx3*qx3];
+    Q_MPC = [wx1*qx1];%, 0, 0;
+         % 0, wx2*qx2, 0;
+         % 0, 0, wx3*qx3];
     R_MPC = wu1*qu1;
-    L_MPC = 40;
+    L_MPC = 1;
     x0 = [0;0;0];
     [A_MPC,B_MPC,C_MPC,Q_MPC,R_MPC,M_MPC,P_MPC,x0] = rate_change_pen(A_MPC,B_MPC,Q_MPC,R_MPC,L_MPC,x0);
     dim.N = 15;
-    dim.nx = 4;
+    dim.nx = 2;
     dim.nu = 1;
-    dim.ny = 4;
+    dim.ny = 2;
     [T,S]=predmodgen(A_MPC, B_MPC, C_MPC, dim);
     [left,right]=costgen(T,S,Q_MPC,R_MPC,dim,x0,P_MPC,M_MPC);
 
