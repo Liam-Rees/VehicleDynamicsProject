@@ -22,7 +22,6 @@ OnlineData Vx; % longitudinal velocity as online data
 % beta = atan(par.l_r * tan (delta) / par.L);
 Cq2 = par.l_f^2 * par.Caf + par.l_r^2 * par.Car;
 
-% f_ctrl = [dot(r) == -Cq2/(par.Izz * 1)*r + Mz/par.Izz];
 f_ctrl = [dot(r) == -Cq2/(par.Izz * Vx)*r + Mz/par.Izz];
 
 %% ACADO: controller formulation
@@ -48,7 +47,7 @@ Mz_thd = 10000;
 
 % constraints in ACADO 
 ocp.subjectTo( -Mz_thd   <= Mz    <= Mz_thd);
-ocp.subjectTo( -1000   <= r    <= 1000);
+ocp.subjectTo( -100000   <= r    <= 100000);
 
 % define ACADO prediction model
 ocp.setModel(f_ctrl);
@@ -90,7 +89,8 @@ disp('Initialization')
 X0       = [0];             % initial state conditions [vx yaw Xp Yp]
 % initialize controller bus
 input.x  = repmat(X0, Np + 1, 1).';      % size Np + 1
-input.od = zeros(Np + 1, 1);            % size Np + 1
+input.od = V_ref * ones(Np + 1, 1);            % size Np + 1
+
 Uref     = zeros(Np, 1);
 input.u  = Uref.';
 input.y  = [repmat(X0, Np, 1) Uref].';   % reference trajectory, size Np + 1
@@ -108,4 +108,36 @@ init.W   = input.W(:).';                  % stage cost matrix (up to Np - 1)
 init.WN  = input.WN(:).';                % terminal cost matrix (only for Np)
 init.x0  = input.x0(:).';                % initial state value
 init.od = input.od(:).';                 % Online data
+
+
+
+
+%% Run
+
+        try
+            % Run the simulation
+            sim('Torque_Vectoring_Acado.slx');
+        catch
+            "ERROR";
+        end
+
+
+
+
 %% Postprocessing
+
+
+start_SwD = 4.8
+
+
+figure
+plot(time(time>start_SwD), yaw_rate(time>start_SwD)); 
+hold on
+plot(time(time>start_SwD), ref_yaw_rate(time>start_SwD)); 
+grid on
+legend("yaw rate","reference yaw rate")
+title(["yaw rate vs refrence yaw rate."])
+subtitle( ["Yaw Velocity Metric:",yaw_velocity_metric])
+f = gcf
+exportgraphics(f,['YVM_.png'])
+hold off
