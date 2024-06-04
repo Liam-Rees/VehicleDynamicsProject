@@ -22,7 +22,7 @@ OnlineData Vx; % longitudinal velocity as online data
 % beta = atan(par.l_r * tan (delta) / par.L);
 Cq2 = par.l_f^2 * par.Caf + par.l_r^2 * par.Car;
 
-% f_ctrl = [dot(r) == -Cq2/(par.Izz * 1)*r + Mz/par.Izz];
+% f_ctrl = [dot(r) == -Cq2/(par.Izz * 60/3.6)*r + Mz/par.Izz];
 f_ctrl = [dot(r) == -Cq2/(par.Izz * Vx)*r + Mz/par.Izz];
 
 %% ACADO: controller formulation
@@ -48,7 +48,7 @@ Mz_thd = 10000;
 
 % constraints in ACADO 
 ocp.subjectTo( -Mz_thd   <= Mz    <= Mz_thd);
-ocp.subjectTo( -1000   <= r    <= 1000);
+ocp.subjectTo( -100000   <= r    <= 100000);
 
 % define ACADO prediction model
 ocp.setModel(f_ctrl);
@@ -96,7 +96,7 @@ input.u  = Uref.';
 input.y  = [repmat(X0, Np, 1) Uref].';   % reference trajectory, size Np + 1
 input.yN = X0.';                        % terminal reference, size Np + 1
 % redefined in Simulink
-input.W  = diag([2*1e4 1/(60/3.6)]);     % weight tuning !! Tune them in the Simulink model !!
+input.W  = diag([2*1e4 1]);     % weight tuning !! Tune them in the Simulink model !!
 input.WN = diag([0]);             % terminal weight tuning
 input.x0 = X0.';
 % controller bus initialization
