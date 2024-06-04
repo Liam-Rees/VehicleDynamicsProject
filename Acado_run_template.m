@@ -16,13 +16,13 @@ V_ref = 60 /3.6;
 %% ACADO set up 
 DifferentialState r; % definition of controller states
 Control Mz; % definition of controller input
-% OnlineData Vx; % longitudinal velocity as online data
+OnlineData Vx; % longitudinal velocity as online data
 
 % controller model of the plant
 % beta = atan(par.l_r * tan (delta) / par.L);
 Cq2 = par.l_f^2 * par.Caf + par.l_r^2 * par.Car;
 
-f_ctrl = [dot(r) == -Cq2/(par.Izz * 1)*r + Mz/par.Izz];
+% f_ctrl = [dot(r) == -Cq2/(par.Izz * 1)*r + Mz/par.Izz];
 f_ctrl = [dot(r) == -Cq2/(par.Izz * Vx)*r + Mz/par.Izz];
 
 %% ACADO: controller formulation
@@ -44,9 +44,11 @@ ocp.minimizeLSQEndTerm(WN,hN);           % terminal
 
 % Constraints definition
 beta_thd       = 10 / 180*pi;            % absolute sideslip 
+Mz_thd = 10000;
 
 % constraints in ACADO 
-% ocp.subjectTo( -beta_thd   <= beta    <= beta_thd);
+ocp.subjectTo( -Mz_thd   <= Mz    <= Mz_thd);
+ocp.subjectTo( -1000   <= r    <= 1000);
 
 % define ACADO prediction model
 ocp.setModel(f_ctrl);
@@ -63,9 +65,6 @@ mpc.set('QP_SOLVER', 'QP_QPOASES3');
 mpc.set('MAX_NUM_QP_ITERATIONS', 20) ;
 mpc.set('HOTSTART_QP','YES');
 mpc.set('GENERATE_SIMULINK_INTERFACE', 'YES');
-
-% Set silent mode for ACADO solver
-mpc.set('PRINTLEVEL', 'NONE');                          % Suppress solver output
 
 %% Export and Compile flags
 EXPORT  = 1;
@@ -91,7 +90,7 @@ disp('Initialization')
 X0       = [0];             % initial state conditions [vx yaw Xp Yp]
 % initialize controller bus
 input.x  = repmat(X0, Np + 1, 1).';      % size Np + 1
-% input.od = zeros(Np + 1, 1);            % size Np + 1
+input.od = zeros(Np + 1, 1);            % size Np + 1
 Uref     = zeros(Np, 1);
 input.u  = Uref.';
 input.y  = [repmat(X0, Np, 1) Uref].';   % reference trajectory, size Np + 1
@@ -108,5 +107,5 @@ init.yN  = input.yN(:).';                % terminal reference value (only for Np
 init.W   = input.W(:).';                  % stage cost matrix (up to Np - 1)
 init.WN  = input.WN(:).';                % terminal cost matrix (only for Np)
 init.x0  = input.x0(:).';                % initial state value
-% init.od = input.od(:).';                 % Online data
+init.od = input.od(:).';                 % Online data
 %% Postprocessing
