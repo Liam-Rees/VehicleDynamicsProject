@@ -42,7 +42,7 @@ int acado_solve( void )
 
 	acado_nWSR = QPOASES_NWSRMAX;
 
-	QProblemCON( &qp, 40,40,HST_POSDEF );
+	QProblemCON( &qp, 80,80,HST_POSDEF );
 	Options_setToMPC( &options );
 	QProblem_setOptions( &qp,options );
 	

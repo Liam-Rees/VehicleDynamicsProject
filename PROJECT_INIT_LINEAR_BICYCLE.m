@@ -12,22 +12,27 @@ Ts = 0.01;	% controller frequency
 % vehicle parameters (bicycle model)
 veh_parameters;
 V_ref = 60 /3.6; 
+mu = 1;
 
 %% ACADO set up 
-DifferentialState r; % definition of controller states
+DifferentialState vx vy yaw r; % definition of controller states
 Control Mz; % definition of controller input
-OnlineData Vx; % longitudinal velocity as online data
+OnlineData delta; % longitudinal velocity as online data
 
 % controller model of the plant
-% beta = atan(par.l_r * tan (delta) / par.L);
+beta = atan(par.l_r * tan (delta) / par.L);
 Cq2 = par.l_f^2 * par.Caf + par.l_r^2 * par.Car;
 
 % f_ctrl = [dot(r) == -Cq2/(par.Izz * 20)*r + Mz/par.Izz]; %no Vx
-f_ctrl = [dot(r) == -Cq2/(par.Izz * Vx)*r + Mz/par.Izz];
+f_ctrl = [
+        dot(vx)    == vy*r;...
+        dot(vy)    == -(par.Caf+par.Car)/(par.mass*vx)*vy+((par.l_r*par.Car-par.l_f*par.Caf)/(par.mass*vx)-vx)*r+par.Caf/par.mass*delta;...
+        dot(yaw)   == r;...
+        dot(r)     == (par.l_r*par.Car-par.l_f*par.Caf)/(par.Izz*vx)*vy-(par.l_r^2*par.Car+par.l_f^2*par.Caf)/(par.Izz*vx)*r+(par.l_f*par.Caf)/par.Izz*delta+Mz/par.Izz];
 
 %% ACADO: controller formulation
 acadoSet('problemname', 'PF_problem');
-Np = 40;                                  % prediction horizon
+Np = 80;                                  % prediction horizon
 ocp  = acado.OCP( 0.0, Np*Ts, Np);        % ACADO ocp
 
 % Residual function definition based on ACADO
@@ -42,13 +47,21 @@ WN = acado.BMatrix(eye(length(hN)));     % terminal
 ocp.minimizeLSQ(W,h);
 ocp.minimizeLSQEndTerm(WN,hN);           % terminal
 
-% Constraints definition
+% constraints in ACADO 
 beta_thd       = 10 / 180*pi;            % absolute sideslip 
 Mz_thd = 10000;
+vx_thd = 170/3.6;
+vy_vx_thd = 5*pi/180;
+vdy_vx_thd = 25*pi/180;
+lat_acc_thd = 0.85*mu*par.g;
 
 % constraints in ACADO 
 ocp.subjectTo( -Mz_thd   <= Mz    <= Mz_thd);
-ocp.subjectTo( -100000   <= r    <= 100000);
+% ocp.subjectTo( -beta_thd   <= beta    <= beta_thd);
+ocp.subjectTo( 0   <= vx  <= vx_thd);
+% ocp.subjectTo( -vy_vx_thd   <= vy/vx    <= vy_vx_thd);
+% ocp.subjectTo( -vdy_vx_thd   <= dot(vy)/vx    <= vdy_vx_thd);
+% ocp.subjectTo( -lat_acc_thd   <= (dot(vy)+vx*r)    <= lat_acc_thd);
 
 % define ACADO prediction model
 ocp.setModel(f_ctrl);
@@ -87,18 +100,17 @@ end
 
 %% initial MPC settings
 disp('Initialization')
-X0       = [0];             % initial state conditions [vx yaw Xp Yp]
+X0       = [V_ref 0 0 0];             % initial state conditions [vx yaw Xp Yp]
 % initialize controller bus
 input.x  = repmat(X0, Np + 1, 1).';      % size Np + 1
-input.od = repmat(Vx, Np + 1, 1);  % Initialize online data (Vx) for the prediction horizon
-            % size Np + 1
+input.od = repmat(0,Np + 1, 1);          % size Np + 1
 Uref     = zeros(Np, 1);
 input.u  = Uref.';
 input.y  = [repmat(X0, Np, 1) Uref].';   % reference trajectory, size Np + 1
 input.yN = X0.';                        % terminal reference, size Np + 1
 % redefined in Simulink
-input.W  = diag([2*1e4 1/(60/3.6)]);     % weight tuning !! Tune them in the Simulink model !!
-input.WN = diag([0]);             % terminal weight tuning
+input.W  = diag([1 1 1 1e7 1e-3]);     % weight tuning !! Tune them in the Simulink model !!
+input.WN = diag([0 0 0 0]);             % terminal weight tuning
 input.x0 = X0.';
 % controller bus initialization
 init.x   = input.x(:).';                  % state trajectory

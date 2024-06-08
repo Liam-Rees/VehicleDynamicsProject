@@ -53,25 +53,37 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     } 
  
     TIME autotime;
+    DifferentialState vx;
+    DifferentialState vy;
+    DifferentialState yaw;
     DifferentialState r;
     Control Mz;
-    OnlineData Vx; 
+    OnlineData delta; 
     BMatrix acadodata_M1;
     acadodata_M1.read( "PF_problem_data_acadodata_M1.txt" );
     BMatrix acadodata_M2;
     acadodata_M2.read( "PF_problem_data_acadodata_M2.txt" );
     Function acadodata_f1;
+    acadodata_f1 << vx;
+    acadodata_f1 << vy;
+    acadodata_f1 << yaw;
     acadodata_f1 << r;
     acadodata_f1 << Mz;
     Function acadodata_f2;
+    acadodata_f2 << vx;
+    acadodata_f2 << vy;
+    acadodata_f2 << yaw;
     acadodata_f2 << r;
-    OCP ocp1(0, 0.4, 40);
+    OCP ocp1(0, 0.8, 80);
     ocp1.minimizeLSQ(acadodata_M1, acadodata_f1);
     ocp1.minimizeLSQEndTerm(acadodata_M2, acadodata_f2);
     ocp1.subjectTo((-1.00000000000000000000e+04) <= Mz <= 1.00000000000000000000e+04);
-    ocp1.subjectTo((-1.00000000000000000000e+05) <= r <= 1.00000000000000000000e+05);
+    ocp1.subjectTo(0.00000000000000000000e+00 <= vx <= 4.72222222222222214327e+01);
     DifferentialEquation acadodata_f3;
-    acadodata_f3 << dot(r) == ((-6.05453560000000055879e+05)/2.63450000000000000000e+03/Vx*r+1/2.63450000000000000000e+03*Mz);
+    acadodata_f3 << dot(vx) == r*vy;
+    acadodata_f3 << dot(vy) == ((-3.10000000000000000000e+05)/1.38000000000000000000e+03/vx*vy+(1.01060000000000000000e+05/1.38000000000000000000e+03/vx-vx)*r+8.69565217391304372541e+01*delta);
+    acadodata_f3 << dot(yaw) == r;
+    acadodata_f3 << dot(r) == (1.01060000000000000000e+05/2.63450000000000000000e+03/vx*vy-1/2.63450000000000000000e+03*6.05453560000000055879e+05*r/vx+1/2.63450000000000000000e+03*Mz+6.30404251281077989688e+01*delta);
 
     ocp1.setModel( acadodata_f3 );
 
@@ -88,7 +100,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: DISCRETIZATION_TYPE");
     options_flag = ExportModule1.set( INTEGRATOR_TYPE, INT_IRK_GL2 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: INTEGRATOR_TYPE");
-    options_flag = ExportModule1.set( NUM_INTEGRATOR_STEPS, 120 );
+    options_flag = ExportModule1.set( NUM_INTEGRATOR_STEPS, 240 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: NUM_INTEGRATOR_STEPS");
     options_flag = ExportModule1.set( LEVENBERG_MARQUARDT, 1.000000E-04 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: LEVENBERG_MARQUARDT");
