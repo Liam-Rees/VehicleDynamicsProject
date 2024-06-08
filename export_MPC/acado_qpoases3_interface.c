@@ -19,7 +19,7 @@
 
 #include <acado_common.h>
 
-#include "qpOASES_e/QProblemB.h"
+#include "qpOASES_e/QProblem.h"
 
 #if ACADO_COMPUTE_COVARIANCE_MATRIX == 1
 #include "qpOASES_e/extras/SolutionAnalysis.h"
@@ -37,23 +37,23 @@ int acado_solve( void )
 {
 
 	returnValue retVal;
-	QProblemB qp;
+	QProblem qp;
 	Options options;
 
 	acado_nWSR = QPOASES_NWSRMAX;
 
-	QProblemBCON( &qp, 40,HST_POSDEF );
+	QProblemCON( &qp, 40,40,HST_POSDEF );
 	Options_setToMPC( &options );
-	QProblemB_setOptions( &qp,options );
+	QProblem_setOptions( &qp,options );
 	
-	retVal = QProblemB_initW( &qp, acadoWorkspace.H, acadoWorkspace.g, acadoWorkspace.lb, acadoWorkspace.ub, &acado_nWSR,0, 0,acadoWorkspace.y, 0,0 );
+	retVal = QProblem_initW( &qp, acadoWorkspace.H, acadoWorkspace.g, acadoWorkspace.A, acadoWorkspace.lb, acadoWorkspace.ub, acadoWorkspace.lbA, acadoWorkspace.ubA, &acado_nWSR,0, 0,acadoWorkspace.y, 0,0,0 );
 	retVal = qpOASES_getSimpleStatus( retVal,0 );
 
     /* only use solution on success, if iteration limit has been reached or if QP is infeasible! */
     if ( ( retVal == 0 ) || ( retVal == 1 ) || ( retVal == -2 ) )
     {
-        QProblemB_getPrimalSolution( &qp,acadoWorkspace.x );
-        QProblemB_getDualSolution( &qp,acadoWorkspace.y );
+        QProblem_getPrimalSolution( &qp,acadoWorkspace.x );
+        QProblem_getDualSolution( &qp,acadoWorkspace.y );
     }
 	
 #if ACADO_COMPUTE_COVARIANCE_MATRIX == 1

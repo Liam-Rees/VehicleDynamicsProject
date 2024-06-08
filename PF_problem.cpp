@@ -55,6 +55,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     TIME autotime;
     DifferentialState r;
     Control Mz;
+    OnlineData Vx; 
     BMatrix acadodata_M1;
     acadodata_M1.read( "PF_problem_data_acadodata_M1.txt" );
     BMatrix acadodata_M2;
@@ -67,15 +68,17 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     OCP ocp1(0, 0.4, 40);
     ocp1.minimizeLSQ(acadodata_M1, acadodata_f1);
     ocp1.minimizeLSQEndTerm(acadodata_M2, acadodata_f2);
+    ocp1.subjectTo((-1.00000000000000000000e+04) <= Mz <= 1.00000000000000000000e+04);
+    ocp1.subjectTo((-1.00000000000000000000e+05) <= r <= 1.00000000000000000000e+05);
     DifferentialEquation acadodata_f3;
-    acadodata_f3 << dot(r) == ((-2.29817255646232695199e+02)*r+1/2.63450000000000000000e+03*Mz);
+    acadodata_f3 << dot(r) == ((-6.05453560000000055879e+05)/2.63450000000000000000e+03/Vx*r+1/2.63450000000000000000e+03*Mz);
 
     ocp1.setModel( acadodata_f3 );
 
 
     ocp1.setNU( 1 );
     ocp1.setNP( 0 );
-    ocp1.setNOD( 0 );
+    ocp1.setNOD( 1 );
     OCPexport ExportModule1( ocp1 );
     ExportModule1.set( GENERATE_MATLAB_INTERFACE, 1 );
     uint options_flag;
@@ -99,8 +102,6 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: HOTSTART_QP");
     options_flag = ExportModule1.set( GENERATE_SIMULINK_INTERFACE, YES );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: GENERATE_SIMULINK_INTERFACE");
-    options_flag = ExportModule1.set( PRINTLEVEL, NONE );
-    if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: PRINTLEVEL");
     uint export_flag;
     export_flag = ExportModule1.exportCode( "export_MPC" );
     if(export_flag != 0) mexErrMsgTxt("ACADO export failed because of the above error(s)!");

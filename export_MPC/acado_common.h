@@ -64,7 +64,7 @@ extern "C"
 /** Number of control/estimation intervals. */
 #define ACADO_N 40
 /** Number of online data values. */
-#define ACADO_NOD 0
+#define ACADO_NOD 1
 /** Number of path constraints. */
 #define ACADO_NPAC 0
 /** Number of control variables. */
@@ -116,6 +116,12 @@ real_t x[ 41 ];
  */
 real_t u[ 40 ];
 
+/** Column vector of size: 41
+ * 
+ *  Matrix containing 41 online data vectors.
+ */
+real_t od[ 41 ];
+
 /** Column vector of size: 80
  * 
  *  Matrix containing 40 reference/measurement vectors of size 2 for first 40 nodes.
@@ -158,8 +164,8 @@ real_t rk_dim1_bPerm[ 1 ];
 
 real_t rk_ttt;
 
-/** Row vector of size: 2 */
-real_t rk_xxx[ 2 ];
+/** Row vector of size: 3 */
+real_t rk_xxx[ 3 ];
 
 /** Column vector of size: 1 */
 real_t rk_kkk[ 1 ];
@@ -188,8 +194,8 @@ real_t rk_diffsPrev2[ 2 ];
 /** Row vector of size: 2 */
 real_t rk_diffsNew2[ 2 ];
 
-/** Row vector of size: 4 */
-real_t state[ 4 ];
+/** Row vector of size: 5 */
+real_t state[ 5 ];
 
 /** Column vector of size: 40 */
 real_t d[ 40 ];
@@ -206,8 +212,8 @@ real_t evGx[ 40 ];
 /** Column vector of size: 40 */
 real_t evGu[ 40 ];
 
-/** Row vector of size: 2 */
-real_t objValueIn[ 2 ];
+/** Row vector of size: 3 */
+real_t objValueIn[ 3 ];
 
 /** Row vector of size: 2 */
 real_t objValueOut[ 2 ];
@@ -257,6 +263,9 @@ real_t w2[ 1 ];
 /** Matrix of size: 40 x 40 (row major format) */
 real_t H[ 1600 ];
 
+/** Matrix of size: 40 x 40 (row major format) */
+real_t A[ 1600 ];
+
 /** Column vector of size: 40 */
 real_t g[ 40 ];
 
@@ -267,10 +276,16 @@ real_t lb[ 40 ];
 real_t ub[ 40 ];
 
 /** Column vector of size: 40 */
-real_t x[ 40 ];
+real_t lbA[ 40 ];
 
 /** Column vector of size: 40 */
-real_t y[ 40 ];
+real_t ubA[ 40 ];
+
+/** Column vector of size: 40 */
+real_t x[ 40 ];
+
+/** Column vector of size: 80 */
+real_t y[ 80 ];
 
 
 } ACADOworkspace;
@@ -282,7 +297,7 @@ real_t y[ 40 ];
 
 /** Performs the integration and sensitivity propagation for one shooting interval.
  *
- *  \param rk_eta Working array of size 2 to pass the input values and return the results.
+ *  \param rk_eta Working array of size 3 to pass the input values and return the results.
  *  \param resetIntegrator The internal memory of the integrator can be reset.
  *
  *  \return Status code of the integrator.

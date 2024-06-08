@@ -24,9 +24,10 @@ void acado_rhs(const real_t* in, real_t* out)
 {
 const real_t* xd = in;
 const real_t* u = in + 1;
+const real_t* od = in + 2;
 
 /* Compute outputs: */
-out[0] = (((real_t)(-2.2981725564623270e+02)*xd[0])+((real_t)(3.7957866767887642e-04)*u[0]));
+out[0] = ((((real_t)(-2.2981725564623270e+02)/od[0])*xd[0])+((real_t)(3.7957866767887642e-04)*u[0]));
 }
 
 
@@ -34,9 +35,10 @@ out[0] = (((real_t)(-2.2981725564623270e+02)*xd[0])+((real_t)(3.7957866767887642
 void acado_diffs(const real_t* in, real_t* out)
 {
 const real_t* xd = in;
+const real_t* od = in + 2;
 
 /* Compute outputs: */
-out[0] = (real_t)(-2.2981725564623270e+02);
+out[0] = ((real_t)(-2.2981725564623270e+02)/od[0]);
 out[1] = (real_t)(3.7957866767887642e-04);
 }
 
@@ -109,6 +111,7 @@ real_t det;
 
 acadoWorkspace.rk_ttt = 0.0000000000000000e+00;
 acadoWorkspace.rk_xxx[1] = rk_eta[3];
+acadoWorkspace.rk_xxx[2] = rk_eta[4];
 
 for (run = 0; run < 3; ++run)
 {
