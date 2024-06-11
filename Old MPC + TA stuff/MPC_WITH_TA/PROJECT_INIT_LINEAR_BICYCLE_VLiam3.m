@@ -215,6 +215,22 @@ init.od = input.od(:).';                 % Online data
         % end
 
 
+yaw_err = yaw_results.Data( yaw_results.Time()>5, 1 ) - yaw_results.Data( yaw_results.Time()>5, 2 );
+RMS_error = sqrt(mean(yaw_err.^2));
+
+
+figure
+hold on
+grid on
+plot(yaw_results.Time(),    yaw_results.Data( :, 1 ))
+plot(yaw_results.Time(),    yaw_results.Data( :, 2 ))
+% subtitle([["RMSE:" RMS_error]])
+subtitle( ["Yaw Velocity Metric:",yaw_velocity_metric])
+ylabel("Position")
+legend("reference", "actual")
+f = gcf
+exportgraphics(f,['yaw_error.png']);
+hold off
 
 
 %% Postprocessing
