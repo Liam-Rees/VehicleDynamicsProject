@@ -41,7 +41,7 @@ switch controller_choice
         F_RR = RR/F_total;
 
         % controller model of the plant
-        f_ctrl = [dot(r) == -(par.l_f^2 * par.Calpha_front + par.l_r^2 * par.Calpha_rear)/(par.Izz*vx)*r-((Tau_FR*F_FR-Tau_FL*F_FL+Tau_RR*F_RR-Tau_RL*F_RL)*par.hBf)/(par.Reff*par.Izz)];
+        f_ctrl = [dot(r) == -(par.l_f^2 * par.Calpha_front + par.l_r^2 * par.Calpha_rear)/(par.Izz*vx)*r-((Tau_FR/F_FR-Tau_FL/F_FL+Tau_RR/F_RR-Tau_RL/F_RL)*par.hBf)/(par.Reff*par.Izz)];
 
     case 2
         CTRL_choice('on','off','on');               % Selecting the controller in the simulink
