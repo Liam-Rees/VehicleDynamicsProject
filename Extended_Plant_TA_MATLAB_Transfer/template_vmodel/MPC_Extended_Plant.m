@@ -252,7 +252,7 @@ plot(yaw_results.Time(),    yaw_results.Data( :, 1 ))
 plot(yaw_results.Time(),    yaw_results.Data( :, 2 ))
 % subtitle([["RMSE:" RMS_error]])
 subtitle( ["Yaw Velocity Metric:",yaw_velocity_metric])
-ylabel("Position (m)")
+ylabel("Yaw Rate (rad/s)")
 xlabel("Time (s)")
 legend("reference", "actual")
 f = gcf
