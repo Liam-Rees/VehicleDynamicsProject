@@ -17,6 +17,7 @@ controller_choice = input('Select MPC controller order (1, 2, or 3): ');
 
 switch controller_choice
     case 1
+        CTRL_choice('off','on','on');                   % Choosing which Case is selected in the Simulink
         %% ACADO set up for controller 1
         DifferentialState r; % definition of controller states
         Control Tau_FR Tau_FL Tau_RR Tau_RL; % definition of controller input
@@ -27,6 +28,7 @@ switch controller_choice
         f_ctrl = [dot(r) == -(par.l_f^2 * par.Calpha_front + par.l_r^2 * par.Calpha_rear)/(par.Izz*vx)*r-((Tau_FR-Tau_FL+Tau_RR-Tau_RL)*par.hBf)/(par.Reff*par.Izz)];
 
     case 2
+        CTRL_choice('on','off','on');                   % Choosing which Case is selected in the Simulink
         %% ACADO set up for controller 2
         DifferentialState vy r; % definition of controller states
         Control Tau_FR Tau_FL Tau_RR Tau_RL; % definition of controller input
@@ -37,6 +39,7 @@ switch controller_choice
                 dot(r)     == (par.l_r*par.Calpha_rear-par.l_f*par.Calpha_front)/(par.Izz*vx)*vy-(par.l_r^2*par.Calpha_rear+par.l_f^2*par.Calpha_front)/(par.Izz*vx)*r-((Tau_FR-Tau_FL+Tau_RR-Tau_RL)*par.hBf)/(par.Reff*par.Izz)];
 
     case 3
+        CTRL_choice('on','on','off');                   % Choosing which Case is selected in the Simulink
         %% ACADO set up for controller 3
         DifferentialState vx vy r; % definition of controller states
         Control Tau_FR Tau_FL Tau_RR Tau_RL; % definition of controller input
@@ -189,4 +192,59 @@ switch controller_choice
         init.WN  = input.WN(:).';  % terminal cost matrix (only for Np)
         init.x0  = input.x0(:).';  % initial state value
 
+end
+
+
+%% sim + process
+sim("MPC_Extended_Plant_Simulink.slx")
+
+yaw_err = yaw_results.Data( yaw_results.Time()>5, 1 ) - yaw_results.Data( yaw_results.Time()>5, 2 );
+RMS_error = sqrt(mean(yaw_err.^2));
+
+fig = ["yaw_error_case1.png","yaw_error_case2.png","yaw_error_case3.png"];
+fig_name = fig(controller_choice);
+fig2 = ["yaw_error_case1.eps","yaw_error_case2.eps","yaw_error_case3.eps"];
+fig_name2 = fig2(controller_choice);
+
+
+figure("Name","Yaw Error")
+hold on
+grid on
+plot(yaw_results.Time(),    yaw_results.Data( :, 1 ))
+plot(yaw_results.Time(),    yaw_results.Data( :, 2 ))
+% subtitle([["RMSE:" RMS_error]])
+subtitle( ["Yaw Velocity Metric:",yaw_velocity_metric])
+ylabel("Position (m)")
+xlabel("Time (s)")
+legend("reference", "actual")
+f = gcf
+exportgraphics(f,fig_name);
+exportgraphics(f,fig_name2);
+hold off
+
+
+% legend("yaw rate","reference yaw rate")
+% title(["yaw rate vs refrence yaw rate."])
+% subtitle( ["Yaw Velocity Metric:",yaw_velocity_metric])
+% f = gcf
+% exportgraphics(f,['YVM PID60.png'])
+% hold off
+
+
+display(RMS_error)
+
+
+
+%% Functions
+function CTRL_choice(case_1, case_2, case_3)
+% CTRL_choice: Set parameters and simulate the system
+% WARNING, the selection is counterintuitive: to enable a system, select
+% the 'off'-value. Likewise, to disable a system, select the 'on' value.
+% It is essential that the multiple systems are not enabled at the same
+% time.
+
+open_system("MPC_Extended_Plant_Simulink");
+set_param('MPC_Extended_Plant_Simulink/Case_1', 'commented', case_1);  % En-/Disable Case 1
+set_param('MPC_Extended_Plant_Simulink/Case_2', 'commented', case_2);  % En-/Disable Case 2
+set_param('MPC_Extended_Plant_Simulink/Case_3', 'commented', case_3);  % En-/Disable Case 3
 end
