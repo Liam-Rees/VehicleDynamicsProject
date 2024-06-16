@@ -54,7 +54,7 @@ end
 
 %% ACADO: controller formulation
 acadoSet('problemname', 'PF_problem');
-Np = 40;                                  % prediction horizon
+Np = 5;                                  % prediction horizon
 ocp  = acado.OCP( 0.0, Np*Ts, Np);        % ACADO ocp
 
 % Residual function definition based on ACADO
@@ -196,16 +196,16 @@ end
 
 
 %% sim + process
+close 'all'
 sim("MPC_Extended_Plant_Simulink.slx")
+yawr_ref = yaw_results.Data(:,1);
+yawr_err = yaw_results.Data(:,1)-yaw_results.Data(:,2);
+zero_crossing_index = find(yawr_ref < 0, 1, 'first');
+time_cross = yaw_results.Time(zero_crossing_index);
 
-yaw_err = yaw_results.Data( yaw_results.Time()>5, 1 ) - yaw_results.Data( yaw_results.Time()>5, 2 );
-RMS_error = sqrt(mean(yaw_err.^2));
-
-fig = ["yaw_error_case1.png","yaw_error_case2.png","yaw_error_case3.png"];
-fig_name = fig(controller_choice);
-fig2 = ["yaw_error_case1.eps","yaw_error_case2.eps","yaw_error_case3.eps"];
-fig_name2 = fig2(controller_choice);
-
+num = trapz(abs(yawr_err(zero_crossing_index:end)));
+den = trapz(abs(yawr_ref(zero_crossing_index:end)));
+yaw_metric = num/den
 
 figure("Name","Yaw Error")
 hold on
@@ -213,7 +213,7 @@ grid on
 plot(yaw_results.Time(),    yaw_results.Data( :, 1 ))
 plot(yaw_results.Time(),    yaw_results.Data( :, 2 ))
 % subtitle([["RMSE:" RMS_error]])
-subtitle( ["Yaw Velocity Metric:",yaw_velocity_metric])
+subtitle( ["Yaw Velocity Metric:",yaw_metric])
 ylabel("Yaw Rate (rad/s)")
 xlabel("Time (s)")
 legend("reference", "actual")
@@ -225,7 +225,7 @@ hold off
 
 % legend("yaw rate","reference yaw rate")
 % title(["yaw rate vs refrence yaw rate."])
-% subtitle( ["Yaw Velocity Metric:",yaw_velocity_metric])
+% subtitle( ["Yaw Velocity Metric:",yaw_metric])
 % f = gcf
 % exportgraphics(f,['YVM PID60.png'])
 % hold off

@@ -76,7 +76,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     acadodata_f2 << vx;
     acadodata_f2 << vy;
     acadodata_f2 << r;
-    OCP ocp1(0, 0.4, 40);
+    OCP ocp1(0, 0.05, 5);
     ocp1.minimizeLSQ(acadodata_M1, acadodata_f1);
     ocp1.minimizeLSQEndTerm(acadodata_M2, acadodata_f2);
     ocp1.subjectTo(0.00000000000000000000e+00 <= vx <= 4.72222222222222214327e+01);
@@ -100,7 +100,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: DISCRETIZATION_TYPE");
     options_flag = ExportModule1.set( INTEGRATOR_TYPE, INT_IRK_GL2 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: INTEGRATOR_TYPE");
-    options_flag = ExportModule1.set( NUM_INTEGRATOR_STEPS, 120 );
+    options_flag = ExportModule1.set( NUM_INTEGRATOR_STEPS, 15 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: NUM_INTEGRATOR_STEPS");
     options_flag = ExportModule1.set( LEVENBERG_MARQUARDT, 1.000000E-04 );
     if(options_flag != 0) mexErrMsgTxt("ACADO export failed when setting the following option: LEVENBERG_MARQUARDT");
