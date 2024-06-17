@@ -20,7 +20,7 @@ switch controller_choice
         CTRL_choice('off','on','on');               % Selecting the controller in the simulink
         %% ACADO set up for controller 1
         DifferentialState r; % definition of controller states
-        Control Tau_FR Tau_FL Tau_RR Tau_RL; % definition of controller input
+        Control Tau_FL Tau_FR Tau_RL Tau_RR; % definition of controller input
         OnlineData vx ax ay;
 
         FzF = (((par.l_r*par.mass*par.g)/(par.l_f+par.l_r)))/2;
@@ -41,13 +41,14 @@ switch controller_choice
         F_RR = RR/F_total;
 
         % controller model of the plant
-        f_ctrl = [dot(r) == -(par.l_f^2 * par.Calpha_front + par.l_r^2 * par.Calpha_rear)/(par.Izz*vx)*r-((Tau_FR*F_FR-Tau_FL*F_FL+Tau_RR*F_RR-Tau_RL*F_RL)*par.hBf)/(par.Reff*par.Izz)];
+        % f_ctrl = [dot(r) == -(par.l_f^2 * par.Calpha_front + par.l_r^2 * par.Calpha_rear)/(par.Izz*vx)*r-((Tau_FR*F_FR-Tau_FL*F_FL+Tau_RR*F_RR-Tau_RL*F_RL)*par.hBf)/(par.Reff*par.Izz)];
+        f_ctrl = [dot(r) == -(par.l_f^2 * par.Calpha_front + par.l_r^2 * par.Calpha_rear)/(par.Izz*vx)*r+((Tau_FR-Tau_FL+Tau_RR-Tau_RL)*par.hBf)/(par.Reff*par.Izz)];
 
     case 2
         CTRL_choice('on','off','on');               % Selecting the controller in the simulink
         %% ACADO set up for controller 2
         DifferentialState vy r; % definition of controller states
-        Control Tau_FR Tau_FL Tau_RR Tau_RL; % definition of controller input
+        Control Tau_FL Tau_FR Tau_RL Tau_RR; % definition of controller input
         OnlineData vx ax ay;
 
         FzF = (((par.l_r*par.mass*par.g)/(par.l_f+par.l_r)))/2;
@@ -69,13 +70,13 @@ switch controller_choice
 
         f_ctrl = [
                 dot(vy)    == -(par.Calpha_front+par.Calpha_rear)/(par.mass*vx)*vy+((par.l_r*par.Calpha_rear-par.l_f*par.Calpha_front)/(par.mass*vx)-vx)*r;...
-                dot(r)     == (par.l_r*par.Calpha_rear-par.l_f*par.Calpha_front)/(par.Izz*vx)*vy-(par.l_r^2*par.Calpha_rear+par.l_f^2*par.Calpha_front)/(par.Izz*vx)*r-((Tau_FR*F_FR-Tau_FL*F_FL+Tau_RR*F_RR-Tau_RL*F_RL)*par.hBf)/(par.Reff*par.Izz)];
+                dot(r)     == (par.l_r*par.Calpha_rear-par.l_f*par.Calpha_front)/(par.Izz*vx)*vy-(par.l_r^2*par.Calpha_rear+par.l_f^2*par.Calpha_front)/(par.Izz*vx)*r+((Tau_FR-Tau_FL+Tau_RR-Tau_RL)*par.hBf)/(par.Reff*par.Izz)];
 
     case 3
         CTRL_choice('on','on','off');               % Selecting the controller in the simulink
         %% ACADO set up for controller 3
         DifferentialState vx vy r; % definition of controller states
-        Control Tau_FR Tau_FL Tau_RR Tau_RL; % definition of controller input
+        Control Tau_FL Tau_FR Tau_RL Tau_RR; % definition of controller input
         OnlineData ax ay;
 
         FzF = (((par.l_r*par.mass*par.g)/(par.l_f+par.l_r)))/2;
@@ -97,7 +98,7 @@ switch controller_choice
 
         f_ctrl = [dot(vx)    == vy*r;...
                 dot(vy)    == -(par.Calpha_front+par.Calpha_rear)/(par.mass*vx)*vy+((par.l_r*par.Calpha_rear-par.l_f*par.Calpha_front)/(par.mass*vx)-vx)*r;...
-                dot(r)     == (par.l_r*par.Calpha_rear-par.l_f*par.Calpha_front)/(par.Izz*vx)*vy-(par.l_r^2*par.Calpha_rear+par.l_f^2*par.Calpha_front)/(par.Izz*vx)*r-((Tau_FR*F_FR-Tau_FL*F_FL+Tau_RR*F_RR-Tau_RL*F_RL)*par.hBf)/(par.Reff*par.Izz)];
+                dot(r)     == (par.l_r*par.Calpha_rear-par.l_f*par.Calpha_front)/(par.Izz*vx)*vy-(par.l_r^2*par.Calpha_rear+par.l_f^2*par.Calpha_front)/(par.Izz*vx)*r+((Tau_FR-Tau_FL+Tau_RR-Tau_RL)*par.hBf)/(par.Reff*par.Izz)];
 
     otherwise
         error('Invalid selection. Please choose 1, 2, or 3.');
@@ -124,6 +125,7 @@ ocp.minimizeLSQEndTerm(WN,hN);           % terminal
 % beta_thd       = 10 / 180*pi;            % absolute sideslip 
 vx_thd = 170/3.6;
 MZ_thd = 10000;
+Tau_max = 2500;
 % vy_vx_thd = 5*pi/180;
 % vdy_vx_thd = 25*pi/180;
 % lat_acc_thd = 0.85*mu*par.g;
@@ -131,14 +133,11 @@ MZ_thd = 10000;
 % delta_d_thd = (800*pi)/(180*par.i_steer);
 
 % constraints in ACADO 
-% ocp.subjectTo( -beta_thd   <= beta    <= beta_thd);
 ocp.subjectTo( 0   <= vx  <= vx_thd);
-% ocp.subjectTo( -MZ_thd   <= Mz <= MZ_thd);
-% ocp.subjectTo( -vy_vx_thd   <= vy/vx    <= vy_vx_thd);
-% ocp.subjectTo( -vdy_vx_thd   <= dot(vy)/vx    <= vdy_vx_thd);
-% ocp.subjectTo( -lat_acc_thd   <= (dot(vy)+vx*r)    <= lat_acc_thd);
-% ocp.subjectTo( -delta_thd   <= delta  <= delta_thd);
-% ocp.subjectTo( -delta_d_thd   <= dot(delta)   <= delta_d_thd);
+ocp.subjectTo(-Tau_max <= Tau_FL/F_FL <= Tau_max);
+ocp.subjectTo(-Tau_max <= Tau_RL/F_RL <= Tau_max);
+ocp.subjectTo(-Tau_max <= Tau_FR/F_FR <= Tau_max);
+ocp.subjectTo(-Tau_max <= Tau_RR/F_RR <= Tau_max);
 
 % define ACADO prediction model
 ocp.setModel(f_ctrl);
@@ -186,7 +185,7 @@ switch controller_choice
         X0 = [0];  % initial state conditions for controller 1 [vx yaw Xp Yp]
         input.x  = repmat(X0, Np + 1, 1).';  % size Np + 1
         input.od = repmat([V_ref;0;0], Np + 1, 1); % size Np + 1
-        Uref     = zeros(Np, 4);
+        Uref     = zeros(Np, length(controls));
         input.u  = Uref.';
         input.y  = [repmat(X0, Np, 1) Uref].';  % reference trajectory, size Np + 1
         input.yN = X0.';  % terminal reference, size Np + 1
@@ -198,7 +197,7 @@ switch controller_choice
         X0 = [0 0];  % initial state conditions for controller 2 [vy r]
         input.x  = repmat(X0, Np + 1, 1).';  % size Np + 1
         input.od = repmat([V_ref;0;0], Np + 1, 1); % size Np + 1
-        Uref     = zeros(Np, 4);
+        Uref     = zeros(Np, length(controls));
         input.u  = Uref.';
         input.y  = [repmat(X0, Np, 1) Uref].';  % reference trajectory, size Np + 1
         input.yN = X0.';  % terminal reference, size Np + 1
@@ -210,7 +209,7 @@ switch controller_choice
         X0 = [V_ref 0 0];  % initial state conditions for controller 3 [vx vy r]
         input.x  = repmat(X0, Np + 1, 1).';  % size Np + 1
         input.od = repmat([0;0], Np + 1, 1); % size Np + 1
-        Uref     = zeros(Np, 4);
+        Uref     = zeros(Np, length(controls));
         input.u  = Uref.';
         input.y  = [repmat(X0, Np, 1) Uref].';  % reference trajectory, size Np + 1
         input.yN = X0.';  % terminal reference, size Np + 1
