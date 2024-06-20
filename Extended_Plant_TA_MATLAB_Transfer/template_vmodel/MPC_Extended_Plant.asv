@@ -265,16 +265,12 @@ hold off
 % exportgraphics(f,['YVM PID60.png'])
 % hold off
 
-%% Control Inputs
-figure("Name","Controller Moment to the Wheels")
-subplot(2,2,1)
-plot(WheelFL)
-xlim([9 14])
 ylim([-750 750])
 grid on
 ylabel("Applied Torque (Nm)")
 xlabel("Time(s)")
 title("Front Left")
+
 
 subplot(2,2,2)
 plot(WheelFR)
