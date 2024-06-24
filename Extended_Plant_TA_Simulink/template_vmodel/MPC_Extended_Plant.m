@@ -226,46 +226,46 @@ hold off
 
 display(RMS_error)
 
-% %% Control Inputs
-% figure("Name","Controller Moment to the Wheels")
-% subplot(2,2,1)
-% plot(WheelFL)
-% xlim([9 14])
+%% Control Inputs
+figure("Name","Controller Moment to the Wheels")
+subplot(2,2,1)
+plot(WheelFL)
+xlim([9 14])
 % ylim([-750 750])
-% grid on
-% ylabel("Applied Torque (Nm)")
-% xlabel("Time(s)")
-% title("Front Left")
-% 
-% subplot(2,2,2)
-% plot(WheelFR)
-% xlim([9 14])
+grid on
+ylabel("Applied Torque (Nm)")
+xlabel("Time(s)")
+title("Front Left")
+
+subplot(2,2,2)
+plot(WheelFR)
+xlim([9 14])
 % ylim([-750 750])
-% grid on
-% ylabel("Applied Torque (Nm)")
-% xlabel("Time(s)")
-% title("Front Right")
-% 
-% subplot(2,2,3)
-% plot(WheelRL)
-% xlim([9 14])
+grid on
+ylabel("Applied Torque (Nm)")
+xlabel("Time(s)")
+title("Front Right")
+
+subplot(2,2,3)
+plot(WheelRL)
+xlim([9 14])
 % ylim([-750 750])
-% grid on
-% ylabel("Applied Torque (Nm)")
-% xlabel("Time(s)")
-% title("Rear Left")
-% 
-% subplot(2,2,4)
-% plot(WheelRR)
-% xlim([9 14])
+grid on
+ylabel("Applied Torque (Nm)")
+xlabel("Time(s)")
+title("Rear Left")
+
+subplot(2,2,4)
+plot(WheelRR)
+xlim([9 14])
 % ylim([-750 750])
-% grid on
-% ylabel("Applied Torque (Nm)")
-% xlabel("Time(s)")
-% title("Rear Rigth")
-% 
-% exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".png");
-% exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".eps");
+grid on
+ylabel("Applied Torque (Nm)")
+xlabel("Time(s)")
+title("Rear Rigth")
+
+exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".png");
+exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".eps");
 
 %% Functions
 function CTRL_choice(case_1, case_2, case_3)

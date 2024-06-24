@@ -126,6 +126,7 @@ ocp.minimizeLSQEndTerm(WN,hN);           % terminal
 vx_thd = 170/3.6;
 MZ_thd = 10000;
 Tau_max = 2500;
+Tau_max = 200;
 % vy_vx_thd = 5*pi/180;
 % vdy_vx_thd = 25*pi/180;
 % lat_acc_thd = 0.85*mu*par.g;
@@ -138,6 +139,11 @@ ocp.subjectTo(-Tau_max <= Tau_FL/F_FL <= Tau_max);
 ocp.subjectTo(-Tau_max <= Tau_RL/F_RL <= Tau_max);
 ocp.subjectTo(-Tau_max <= Tau_FR/F_FR <= Tau_max);
 ocp.subjectTo(-Tau_max <= Tau_RR/F_RR <= Tau_max);
+
+% ocp.subjectTo(-10 <= Tau_FL <= 10);
+% ocp.subjectTo(-10 <= Tau_FR <= 10);
+% ocp.subjectTo(-10 <= Tau_RL <= 10);
+% ocp.subjectTo(-10 <= Tau_RR <= 10);
 
 % define ACADO prediction model
 ocp.setModel(f_ctrl);
