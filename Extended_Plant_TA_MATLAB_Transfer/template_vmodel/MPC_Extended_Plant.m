@@ -142,7 +142,7 @@ ocp.subjectTo(-Tau_max <= Tau_RR/F_RR <= Tau_max);
 % define ACADO prediction model
 ocp.setModel(f_ctrl);
     
-% ACADO settings [Don't change these settings in your HMA]
+% ACADO settings [Don't change these settings in your HMA] 
 mpc = acado.OCPexport( ocp );
 mpc.set('HESSIAN_APPROXIMATION', 'GAUSS_NEWTON');       % solving algorithm
 mpc.set('DISCRETIZATION_TYPE', 'MULTIPLE_SHOOTING');    % discretization algorithm

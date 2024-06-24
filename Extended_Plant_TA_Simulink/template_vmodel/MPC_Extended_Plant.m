@@ -200,12 +200,6 @@ sim("MPC_Extended_Plant_Simulink.slx")
 yaw_err = yaw_results.Data( yaw_results.Time()>5, 1 ) - yaw_results.Data( yaw_results.Time()>5, 2 );
 RMS_error = sqrt(mean(yaw_err.^2));
 
-fig = ["yaw_error_case1.png","yaw_error_case2.png","yaw_error_case3.png"];
-fig_name = fig(controller_choice);
-fig2 = ["yaw_error_case1.eps","yaw_error_case2.eps","yaw_error_case3.eps"];
-fig_name2 = fig2(controller_choice);
-
-
 figure("Name","Yaw Error")
 hold on
 grid on
@@ -213,12 +207,12 @@ plot(yaw_results.Time(),    yaw_results.Data( :, 1 ))
 plot(yaw_results.Time(),    yaw_results.Data( :, 2 ))
 % subtitle([["RMSE:" RMS_error]])
 subtitle( ["Yaw Velocity Metric:",yaw_velocity_metric])
-ylabel("Position (m)")
+ylabel("Yaw Rate (rad/s)")
 xlabel("Time (s)")
 legend("reference", "actual")
-f = gcf
-exportgraphics(f,fig_name);
-exportgraphics(f,fig_name2);
+
+exportgraphics(gcf,"yaw_error_case"+num2str(controller_choice)+".png");
+exportgraphics(gcf,"yaw_error_case"+num2str(controller_choice)+".eps");
 hold off
 
 
@@ -232,7 +226,46 @@ hold off
 
 display(RMS_error)
 
-
+% %% Control Inputs
+% figure("Name","Controller Moment to the Wheels")
+% subplot(2,2,1)
+% plot(WheelFL)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Front Left")
+% 
+% subplot(2,2,2)
+% plot(WheelFR)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Front Right")
+% 
+% subplot(2,2,3)
+% plot(WheelRL)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Rear Left")
+% 
+% subplot(2,2,4)
+% plot(WheelRR)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Rear Rigth")
+% 
+% exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".png");
+% exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".eps");
 
 %% Functions
 function CTRL_choice(case_1, case_2, case_3)

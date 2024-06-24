@@ -205,7 +205,7 @@ time_cross = yaw_results.Time(zero_crossing_index);
 
 num = trapz(abs(yawr_err(zero_crossing_index:end)));
 den = trapz(abs(yawr_ref(zero_crossing_index:end)));
-yaw_metric = num/den
+yaw_metric = num/den;
 
 figure("Name","Yaw Error")
 hold on
@@ -217,9 +217,9 @@ subtitle( ["Yaw Velocity Metric:",yaw_metric])
 ylabel("Yaw Rate (rad/s)")
 xlabel("Time (s)")
 legend("reference", "actual")
-f = gcf
-exportgraphics(f,fig_name);
-exportgraphics(f,fig_name2);
+
+exportgraphics(gcf,"yaw_error_case"+num2str(controller_choice+".png");
+exportgraphics(gcf,"yaw_error_case"+num2str(controller_choice+".eps");
 hold off
 
 
@@ -233,6 +233,46 @@ hold off
 
 display(RMS_error)
 
+% %% Control Inputs
+% figure("Name","Controller Moment to the Wheels")
+% subplot(2,2,1)
+% plot(WheelFL)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Front Left")
+% 
+% subplot(2,2,2)
+% plot(WheelFR)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Front Right")
+% 
+% subplot(2,2,3)
+% plot(WheelRL)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Rear Left")
+% 
+% subplot(2,2,4)
+% plot(WheelRR)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Rear Rigth")
+% 
+% exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".png");
+% exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".eps");
 
 
 %% Functions
