@@ -125,8 +125,7 @@ ocp.minimizeLSQEndTerm(WN,hN);           % terminal
 % beta_thd       = 10 / 180*pi;            % absolute sideslip 
 vx_thd = 170/3.6;
 MZ_thd = 10000;
-Tau_max = 2500;
-Tau_max = 200;
+Tau_max = 2500;      % Tau_max = 200; % Different option
 % vy_vx_thd = 5*pi/180;
 % vdy_vx_thd = 25*pi/180;
 % lat_acc_thd = 0.85*mu*par.g;
@@ -235,9 +234,6 @@ init.x0  = input.x0(:).';  % initial state value
 init.od  = input.od(:).';  % Online data
 
 
-
-
-
 %% sim + process
 sim("MPC_Extended_Plant_Simulink.slx")
 yawr_ref = yaw_results.Data(:,1);
@@ -249,29 +245,201 @@ num = trapz(abs(yawr_err(zero_crossing_index:end)));
 den = trapz(abs(yawr_ref(zero_crossing_index:end)));
 yaw_metric = num/den;
 
-figure("Name","Yaw Error")
+% Save important results
+if controller_choice == 1
+    P1.yaw.metric = yaw_metric;
+    P1.yaw.results.Time= yaw_results.Time;
+    P1.yaw.results.Data= yaw_results.Data;
+    P1.Wheel.FL = WheelFL;
+    P1.Wheel.FR = WheelFR;
+    P1.Wheel.RL = WheelRL;
+    P1.Wheel.RR = WheelRR;
+    save("P1")
+elseif controller_choice == 2
+    P2.yaw.metric = yaw_metric;
+    P2.yaw.results.Time= yaw_results.Time;
+    P2.yaw.results.Data= yaw_results.Data;
+    P2.Wheel.FL = WheelFL;
+    P2.Wheel.FR = WheelFR;
+    P2.Wheel.RL = WheelRL;
+    P2.Wheel.RR = WheelRR;
+    save("P2")
+elseif controller_choice == 3
+    P3.yaw.metric = yaw_metric;
+    P3.yaw.results.Time= yaw_results.Time;
+    P3.yaw.results.Data= yaw_results.Data;
+    P3.Wheel.FL = WheelFL;
+    P3.Wheel.FR = WheelFR;
+    P3.Wheel.RL = WheelRL;
+    P3.Wheel.RR = WheelRR;
+    save("P3")
+end
+
+%% Plots for report
+load("P1.mat")
+load("P2.mat")
+load("P3.mat")
+
+% Yaw rate plot
+
+figure("Name","Yaw Error1")
 hold on
 grid on
-plot(yaw_results.Time(),    yaw_results.Data( :, 1 ))
-plot(yaw_results.Time(),    yaw_results.Data( :, 2 ))
-% subtitle([["RMSE:" RMS_error]])
-subtitle( ["Yaw Velocity Metric:",yaw_metric])
+plot(P1.yaw.results.Time(),    P1.yaw.results.Data( :, 1 ))
+plot(P1.yaw.results.Time(),    P1.yaw.results.Data( :, 2 ))
+subtitle(["Yaw Velocity Metric:",P1.yaw.metric])
 ylabel("Yaw Rate (rad/s)")
 xlabel("Time (s)")
+xlim([9.5 12.5])
 legend("reference", "actual")
 
-exportgraphics(gcf,"yaw_error_case"+num2str(controller_choice)+".png");
-exportgraphics(gcf,"yaw_error_case"+num2str(controller_choice)+".eps");
+exportgraphics(gcf,"yaw_error_case1.png");
+exportgraphics(gcf,"yaw_error_case1.eps");
 hold off
 
-% legend("yaw rate","reference yaw rate")
-% title(["yaw rate vs refrence yaw rate."])
-% subtitle( ["Yaw Velocity Metric:",yaw_metric])
-% f = gcf
-% exportgraphics(f,['YVM PID60.png'])
-% hold off
+figure("Name","Yaw Error2")
+hold on
+grid on
+plot(P2.yaw.results.Time(),    P2.yaw.results.Data( :, 1 ))
+plot(P2.yaw.results.Time(),    P2.yaw.results.Data( :, 2 ))
+subtitle(["Yaw Velocity Metric:",P2.yaw.metric])
+ylabel("Yaw Rate (rad/s)")
+xlabel("Time (s)")
+xlim([9.5 12.5])
+legend("reference", "actual")
 
-%% Control Inputs
+exportgraphics(gcf,"yaw_error_case2.png");
+exportgraphics(gcf,"yaw_error_case2.eps");
+hold off
+
+figure("Name","Yaw Error3")
+hold on
+grid on
+plot(P3.yaw.results.Time(),    P3.yaw.results.Data( :, 1 ))
+plot(P3.yaw.results.Time(),    P3.yaw.results.Data( :, 2 ))
+subtitle(["Yaw Velocity Metric:",P3.yaw.metric])
+ylabel("Yaw Rate (rad/s)")
+xlabel("Time (s)")
+xlim([9.5 12.5])
+legend("reference", "actual")
+
+exportgraphics(gcf,"yaw_error_case3.png");
+exportgraphics(gcf,"yaw_error_case3.eps");
+hold off
+
+%% Control Input plots
+figure("Name","Control Input plot")
+subplot(3,2,1)
+plot(P1.Wheel.FL)
+hold on
+plot(P1.Wheel.RL)
+xlim([9.5 14])
+% ylim([-750 750])
+grid on
+ylabel("") % ylabel("Applied Torque (Nm)")
+xlabel("") % xlabel("Time(s)")
+title("Left-One state")
+legend("Front", "Rear", location="northeast")
+
+subplot(3,2,2)
+plot(P1.Wheel.FR)
+hold on
+plot(P1.Wheel.RR)
+xlim([9.5 14])
+% ylim([-750 750])
+grid on
+ylabel("") % ylabel("Applied Torque (Nm)")
+xlabel("") % xlabel("Time(s)")
+title("Right-One state")
+
+subplot(3,2,3)
+plot(P2.Wheel.FL)
+hold on
+plot(P2.Wheel.RL)
+xlim([9.5 14])
+% ylim([-750 750])
+grid on
+ylabel("Applied Torque (Nm)")
+xlabel("") % xlabel("Time(s)")
+title("Left-Two states")
+
+subplot(3,2,4)
+plot(P2.Wheel.FR)
+hold on
+plot(P2.Wheel.RR)
+xlim([9.5 14])
+% ylim([-750 750])
+grid on
+ylabel("") % ylabel("Applied Torque (Nm)")
+xlabel("") % xlabel("Time(s)")
+title("Right-Two states")
+
+subplot(3,2,5)
+plot(P3.Wheel.FL)
+hold on
+plot(P3.Wheel.RL)
+xlim([9.5 14])
+% ylim([-750 750])
+grid on
+ylabel("") % ylabel("Applied Torque (Nm)")
+xlabel("Time(s)")
+title("Left-Three states")
+
+subplot(3,2,6)
+plot(P3.Wheel.FR)
+hold on
+plot(P3.Wheel.RR)
+xlim([9.5 14])
+% ylim([-750 750])
+grid on
+ylabel("") % ylabel("Applied Torque (Nm)")
+xlabel("Time(s)")
+title("Right-Three states")
+
+exportgraphics(gcf,"intTALD_CI.png");
+exportgraphics(gcf,"intTALD_CI.eps");
+
+
+%%
+% Plot of the yaw rates per model
+figure("Name","Yaw Error per model")
+subplot(1,3,1)
+hold on
+grid on
+plot(P1.yaw.results.Time(),    P1.yaw.results.Data( :, 1 ))
+plot(P1.yaw.results.Time(),    P1.yaw.results.Data( :, 2 ))
+% subtitle([["RMSE:" RMS_error]])
+title("One State")
+subtitle(["Yaw Velocity Metric:",P1.yaw.metric])
+ylabel("Yaw Rate (rad/s)")
+xlim([9.5 12.5])
+
+subplot(1,3,2)
+hold on
+grid on
+plot(P2.yaw.results.Time(),    P2.yaw.results.Data( :, 1 ))
+plot(P2.yaw.results.Time(),    P2.yaw.results.Data( :, 2 ))
+% subtitle([["RMSE:" RMS_error]])
+title("Two States")
+subtitle(["Yaw Velocity Metric:",P2.yaw.metric])
+ylabel("Yaw Rate (rad/s)")
+xlim([9.5 12.5])
+
+subplot(1,3,3)
+hold on
+grid on
+plot(P3.yaw.results.Time(),    P1.yaw.results.Data( :, 1 ))
+plot(P3.yaw.results.Time(),    P1.yaw.results.Data( :, 2 ))
+title("Three States")
+subtitle(["Yaw Velocity Metric:",P3.yaw.metric])
+ylabel("Yaw Rate (rad/s)")
+xlabel("Time (s)")
+xlim([9.5 12.5])
+legend("Reference", "Actual",location="northeast")
+
+
+
+%% Control Inputs Plot
 figure("Name","Controller Moment to the Wheels")
 subplot(2,2,1)
 plot(WheelFL)
@@ -280,6 +448,8 @@ ylim([-750 750])
 grid on
 ylabel("Applied Torque (Nm)")
 xlabel("Time(s)")
+xlim([9.5 12.5])
+
 title("Front Left")
 
 subplot(2,2,2)
@@ -311,6 +481,64 @@ title("Rear Rigth")
 
 exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".png");
 exportgraphics(gcf,"App_Torque_case"+num2str(controller_choice)+".eps");
+
+
+%% Combination Figure
+
+figure("Name","Combination Figure")
+subplot(2,2,1:2)
+hold on
+grid on
+plot(yaw_results.Time(),    yaw_results.Data( :, 1 ))
+plot(yaw_results.Time(),    yaw_results.Data( :, 2 ))
+% subtitle([["RMSE:" RMS_error]])
+subtitle("Yaw Velocity Metric: "+num2str(yaw_metric))
+ylabel("Yaw Rate (rad/s)")
+xlabel("Time (s)")
+legend("reference", "actual", Location="southwest")
+
+subplot(2,2,3)
+plot(WheelFL)
+xlim([9 14])
+ylim([-750 750])
+grid on
+hold on
+plot(WheelRL)
+legend("Front", "Rear", Location="northeast")
+ylabel("Applied Torque (Nm)")
+xlabel("time (s)")
+title("Left")
+
+subplot(2,2,4)
+plot(WheelFR)
+xlim([9 14])
+ylim([-750 750])
+grid on
+hold on
+plot(WheelRR)
+legend("Front", "Rear", Location="southeast")
+ylabel("Applied Torque (Nm)")
+xlabel("time (s)")
+title("Right")
+
+% subplot(3,2,5)
+% plot(WheelRL)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("Applied Torque (Nm)")
+% xlabel("Time(s)")
+% title("Rear Left")
+% 
+% subplot(3,2,6)
+% plot(WheelRR)
+% xlim([9 14])
+% ylim([-750 750])
+% grid on
+% ylabel("")
+% xlabel("Time(s)")
+% title("Rear Right")
+
 
 %% Functions
 function CTRL_choice(case_1, case_2, case_3)
